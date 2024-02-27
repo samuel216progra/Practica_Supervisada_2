@@ -1,21 +1,27 @@
 const { Schema, model} = require('mongoose');
 
-const CursoSchema = Schema({
-
-    nombre:{
+const CursosSchema = Schema ({
+    nombreCurso:{
         type: String,
-        require: [true, "El nombre es obligatorio"],
-        unique: true
+        required: [true, 'El nombre del curso es de caracter obligatorio']
     },
     descripcion:{
         type: String,
-        require: [true, "la descripcion es obligatoria"]
+        default: 'Descripcion vacia'
+    },
+    profesorId:{
+        type: String
     },
     estado:{
         type: Boolean,
         default: true
     }
-
 });
 
-module.exports = model('Curso', CursoSchema);
+CursosSchema.methods.toJSON = function(){
+    const{ __v,password, _id, profesorId, ...curso} = this.toObject();
+    curso.IdCurso = _id;
+    return curso;
+};
+
+module.exports = model('Curso', CursosSchema);

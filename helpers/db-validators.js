@@ -1,79 +1,74 @@
-const Role = require('../models/role');
-const Alumno = require('../models/alumno');
-const Maestro =  require('../models/maestro')
-const Curso = require('../models/curso');
+const Alumno = require('../models/student');
+const Cursos = require('../models/curso');
+const Profesor = require('../models/teacher')
+const mongoose = require('mongoose');
 
-const esRoleValido = async (role = '') => {
-    const existeRol = await Role.findOne({role});
-    if(!existeRol){
-        throw new Error(`El role ${ role } no existe en la base de datos`);
-    }
-}
-
+// Alumnos
 const existenteEmail = async (correo = '') => {
-    const existeEmail = await Maestro.findOne({correo});
-    if(existeEmail){
-        throw new Error(`El correo ${ correo } ya esta registrado`);
+    const existeEmail = await Alumno.findOne({ correo });
+    if (existeEmail) {
+        throw new Error(`El correo ${correo} ya está registrado`);
     }
 }
-
-const existeMaestroById = async (id = '') => {
-    const existeMaestro = await Maestro.findOne({id});
-    if(existeMaestro){
-        throw new Error(`El maestro con el ${ id } no existe`)
-    }
-}
-
-const existeAsignaMaesCurso = async (maestroId, cursoId) => {
-    const asignacion = await Maestro.findOne({ _id: maestroId, curso: cursoId });
-    return asignacion !== null;
-};
-//--------------------------------------------------------------------------------------
-const existeCursoById = async (id = '') => {
-    const existeCurso = await Curso.findOne({id});
-    if(existeCurso){
-        throw new Error(`el id ${id} no pertenece a un curso`)
-    }
-}
-
-
 
 const existeAlumnoById = async (id = '') => {
-    const existeAlumno = await Alumno.findOne({id});
-    if(existeAlumno){
-        throw new Error(`El alumno con el ${ id } no existe`)
+    const existeAlumno = await Alumno.findOne({ id });
+    if (existeAlumno) {
+        throw new Error(`El Estudiante con el ${id} no existe`);
     }
 }
 
-
-
-const existeAsignaAlumCurso = async (alumnoId, cursoId) => {
-    const asignacion = await Alumno.findOne({ _id: alumnoId, curso: cursoId });
-    return asignacion !== null;
-};
-
-const existeEmailAlumno = async (correo = '') => {
-    const existeEmailA = await Alumno.findOne({correo});
-    if(existeEmailA){
-        throw new Error(`El correo ${ correo } ya esta registrado`);
+// Profesor
+const existenteEmailProfesor = async (correo = '') => {
+    const existeEmailProfe = await Profesor.findOne({ correo });
+    if (existeEmailProfe) {
+        throw new Error(`El correo ${correo} ya está registrado`);
     }
 }
 
-const existeCursoByIdA = async (cursoId) => {
-    const curso = await Curso.findById(cursoId);
-    if (!curso || curso.eliminado) {
-        throw new Error(`El curso con el ID ${cursoId} no existe o ha sido eliminado`);
+const existeProfesorById = async (id = '') => {
+    const existeProfesor = await Profesor.findOne({ id });
+    if (existeProfesor) {
+        throw new Error(`El Profesor con el ${id} no existe`);
+    }
+}
+
+// Cursos
+const esCursoValido = async (cursos = []) => {
+    for (const id of cursos) {
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            throw new Error(`El id '${id}'  no es un Id válido`);
+        }
+
+        const cursoExistente = await Cursos.findOne({ _id: id });
+
+        if (!cursoExistente) {
+            throw new Error(`El curso con el id: ${id} no se encontro en la DB`);
+        }
     }
 };
+
+const cursoRepetido = async (cursos = []) => {
+    const cursosIngresados = new Set(cursos);
+
+    if (cursosIngresados.size !== cursos.length) {
+        throw new Error(`No se permite asignarse al mismo curso más de una vez`);
+    }
+}
+
+const maximoTresCursos = async (cursos = []) => {
+    if (cursos.length > 3) {
+        throw new Error(`Solo 3 cursos estan permitidos`);
+    }
+}
+
 
 module.exports = {
-    esRoleValido,
     existenteEmail,
-    existeMaestroById,
-    existeCursoById,
-    existeEmailAlumno,
     existeAlumnoById,
-    existeAsignaAlumCurso,
-    existeAsignaMaesCurso,
-    existeCursoByIdA
+    esCursoValido,
+    cursoRepetido,
+    maximoTresCursos,
+    existeProfesorById,
+    existenteEmailProfesor,
 }

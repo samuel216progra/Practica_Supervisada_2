@@ -1,33 +1,50 @@
-const esTeacherRole = (req, res, next) => {
-    if (!req.maestro && !req.alumno) {
+const { response } = require('express');
+
+const esAlumnoRole = (req, res, next) =>{
+    if(!req.alumno){
         return res.status(500).json({
-            msg: "Se desea validar un usuario sin validar token primero"
+            msg: 'Se desea validar un alumno sin validar token primero'
         });
     }
 
-    const user = req.maestro || req.alumno;
+    const { role, nombre } = req.alumno;
 
-    if (user && user.role !== "TEACHER_ROLE") {
+    if(role !== 'STUDENT_ROLE'){
         return res.status(401).json({
-            msg: `${user.nombre} no es un Teacher, no tienes acceso a esto`
+            msg: `${nombre} no puede realizar esta accion por que no es estudiante`
         });
-    };
+    }
+    next();
+}
+
+const esProfesorRole = (req, res, next) =>{
+    if(!req.profesor){
+        return res.status(500).json({
+            msg: 'No se pudo validar el profesor'
+        });
+    }
+
+    const { role, nombre } = req.profesor;
+
+    if(role !== 'TEACHER_ROLE'){
+        return res.status(401).json({
+            msg: `${nombre} no se puede realizar esta accion por que no es estudiante`
+        });
+    }
     next();
 }
 
 const tieneRolAutorizado = (...roles) => {
-    return (req, res, next) => {
-        if (!req.maestro && !req.alumno) {
+    return (req =request, res = response, next) =>{
+        if(!req.usuario){
             return res.status(500).json({
-                msg: "Se desea validar un usuario sin validar token primero"
+                msg: "el usuario no tiene token"
             });
         }
-
-        const user = req.maestro || req.alumno;
-
-        if (user && !roles.includes(user.role)) {
+    
+        if(!roles.includes(req.usuario.role)){
             return res.status(401).json({
-                msg: `El servicio requiere uno de los siguientes roles autorizados: ${roles.join(", ")}`
+                msg: `Es necesario que sea uno de los siguientes roles : ${roles}`
             });
         }
         next();
@@ -35,6 +52,7 @@ const tieneRolAutorizado = (...roles) => {
 }
 
 module.exports = {
-    esTeacherRole,
-    tieneRolAutorizado
+    esAlumnoRole,
+    tieneRolAutorizado,
+    esProfesorRole
 }
